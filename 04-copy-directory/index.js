@@ -45,14 +45,12 @@ async function fileInfo(pathToMyFile) {
 }
 
 async function folderPresents() {
-  fs.stat(dirToMake, function(err) {
-    if (err.code === 'ENOENT') {
-      return false;
-    } else {
-      return true;
-    }
-});
-  
+  try {
+    const isDir = await fsPromises.lstat(dirToMake); 
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 try {
