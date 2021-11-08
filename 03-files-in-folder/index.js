@@ -13,7 +13,7 @@ async function readDir(pathToDir) {
       //await readDir(pathToInnerDir);
     } else {
       let filePathInfo = path.parse(fileName);
-      console.log(`${filePathInfo.name} - ${filePathInfo.ext} - ${fileData.size}`);
+      console.log(`${filePathInfo.name} - ${filePathInfo.ext} - ${(fileData.size/1000)}kb`);
     }
   }
 }

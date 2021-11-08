@@ -21,10 +21,7 @@ async function wrapper(pathToDir) {
 
   const promises = files.map(file => {
     return new Promise((resolve, reject) => {
-
       resolve(readDir2(path.join(pathToDir, file)));
-    
-    
     });
   });
 
