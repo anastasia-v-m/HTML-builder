@@ -41,15 +41,15 @@ async function makeDir() {
     await removeInDir(dirToMake);
     await removeDir();
   } else {
-    fsPromises.mkdir(dirToMake);
+    //await fsPromises.mkdir(dirToMake);
   }
 }
 
 async function findOrMakeDir(adr) {
   let isFolder = await dirPresents(adr);
-  
-  if (!isFolder)  {
-    fsPromises.mkdir(dirToMake);
+  //console.log('***', adr, isFolder)
+  if (!isFolder){
+    await fsPromises.mkdir(adr);
   }
 }
 
@@ -253,9 +253,11 @@ async function copyFiles(initFolder, distFolder) {
     if (!isDir.isDirectory()) {
       let fileFrom = path.join(initFolder, fileName);
       let fileTo = path.join(distFolder, fileName);
+      //console.log(fileFrom)
       await fsPromises.copyFile(fileFrom, fileTo);
     } else {
-      await findOrMakeDir(pathToMyFile);
+      //console.log('***', path.join(distFolder, fileName))
+      await findOrMakeDir(path.join(distFolder, fileName));
       await copyFiles(path.join(initFolder, fileName), path.join(distFolder, fileName));
     }
   }
@@ -266,16 +268,15 @@ async function copyFiles(initFolder, distFolder) {
 
 try {
 
-  makeDir();  
+  makeDir();
+  findOrMakeDir(path.join(__dirname, 'project-dist'));  
   wrapper();
 
-  //prepareOutput(styleFile);
+  // //prepareOutput(styleFile);
   styleWrapper(styledDir);
 
-  // fs.mkdir(path.join(dirToMake, 'assets'), { recursive: false }, (err) => {
-  //   if (err) throw err;
-  // });
-   copyFiles(path.join(__dirname, 'assets'), path.join(__dirname, 'project-dist', 'assets'));
+  findOrMakeDir(path.join(dirToMake, 'assets'));
+  copyFiles(path.join(__dirname, 'assets'), path.join(__dirname, 'project-dist', 'assets'));
 
 
 } catch (err1) {
