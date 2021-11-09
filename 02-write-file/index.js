@@ -15,7 +15,8 @@ process.stdout.write('Hello! Type something!\n');
 in_Stream.resume();
 in_Stream.setEncoding('utf-8');
 in_Stream.on('data', (chunk) => {
-  if (chunk.toString().indexOf('exit') > 0) {
+  console.log(chunk.toString())
+  if (chunk.toString().indexOf('exit') >= 0) {
     process.stdout.write('Game over))) Goodbuy!');
     process.exit(1);    
   } else {
