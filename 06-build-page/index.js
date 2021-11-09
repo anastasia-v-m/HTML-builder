@@ -8,49 +8,48 @@ const dirToMake = path.join(__dirname, 'project-dist');
 const styleFile = path.join(__dirname, 'project-dist', 'style.css');
 const styledDir = path.join(__dirname, 'styles');
 
+let toDel = [];
 
-async function removeDir(dirToRemove) {
+async function removeInDir(dirToRemove) {
 
   fs.readdir(dirToRemove, async (err, files) => {
     if (err) throw err;
     for (const file of files) {
-      let fileData = await fileInfo(file);
+      let fileData = await fileInfo(path.join(dirToRemove, file));
       if (!fileData.isDirectory()) {
-        console('1')
-        fs.unlink(path.join(dirToRemove, file), err => {
-          if (err) throw err;
-        });
+        await fsPromises.unlink(path.join(dirToRemove, file));
       } else {
-        console.log('file')
-        await removeDir(path.join(dirToRemove, file));
+        toDel.push(path.join(dirToRemove, file));
+        await removeInDir(path.join(dirToRemove, file));
+        //console.log('2', path.join(dirToRemove, file))
+        //await fsPromises.rmdir(dirToRemove);
       }
     }
-    await fsPromises.rmdir(dirToRemove);
+    //await fsPromises.rmdir(dirToRemove);
   });
+}
+
+async function removeDir() {
+  
 }
 
 async function makeDir() {
   let isFolder = await dirPresents(path.join(__dirname, 'project-dist'));
   
   if (isFolder) {
-    // fs.readdir(dirToMake, (err, files) => {
-    //   if (err) throw err;
-    //   for (const file of files) {
-    //     fs.unlink(path.join(dirToMake, file), err => {
-    //       if (err) throw err;
-    //     });
-    //   }
-    // });
-    fs.rm(dirToMake);
-      fs.mkdir(dirToMake, { recursive: false }, (err) => {
-        if (err) throw err;
-      })  
-
-
+    toDel.push(dirToMake);
+    await removeInDir(dirToMake);
+    await removeDir();
   } else {
-    fs.mkdir(dirToMake, { recursive: false }, (err) => {
-      if (err) throw err;
-    });
+    fsPromises.mkdir(dirToMake);
+  }
+}
+
+async function findOrMakeDir(adr) {
+  let isFolder = await dirPresents(adr);
+  
+  if (!isFolder)  {
+    fsPromises.mkdir(dirToMake);
   }
 }
 
@@ -176,14 +175,19 @@ async function toStr(pathToFile) {
 async function prepareOutput(file) {
   let isFile = await dirPresents(file);  
   if (isFile) {
-    await delFile(file);  
+    try 
+      {await delFile(file); }
+    catch 
+      {console.log('')}
   }
 }
 
 async function delFile(file) {
-  fs.unlink(file, err => {
-    if (err) throw err;
-  });  
+  fs.unlink(file
+    //, err => {
+    //if (err) throw err;
+  //}
+  );  
 }
 
 async function styleWrapper(pathToDir) {
@@ -249,14 +253,10 @@ async function copyFiles(initFolder, distFolder) {
     if (!isDir.isDirectory()) {
       let fileFrom = path.join(initFolder, fileName);
       let fileTo = path.join(distFolder, fileName);
-      fs.copyFile(fileFrom, fileTo, (err) => {
-        if (err) throw err;  
-      });
+      await fsPromises.copyFile(fileFrom, fileTo);
     } else {
-      fs.mkdir(path.join(distFolder, fileName), { recursive: false }, (err) => {
-        if (err) throw err;
-      });
-      copyFiles(path.join(initFolder, fileName), path.join(distFolder, fileName));
+      await findOrMakeDir(pathToMyFile);
+      await copyFiles(path.join(initFolder, fileName), path.join(distFolder, fileName));
     }
   }
 }
@@ -269,15 +269,15 @@ try {
   makeDir();  
   wrapper();
 
-  prepareOutput(styleFile);
+  //prepareOutput(styleFile);
   styleWrapper(styledDir);
 
   // fs.mkdir(path.join(dirToMake, 'assets'), { recursive: false }, (err) => {
   //   if (err) throw err;
   // });
-  // copyFiles(path.join(__dirname, 'assets'), path.join(__dirname, 'project-dist', 'assets'));
+   copyFiles(path.join(__dirname, 'assets'), path.join(__dirname, 'project-dist', 'assets'));
 
 
-} catch (err) {
-  console.error(err);
+} catch (err1) {
+  console.error(err1);
 }
